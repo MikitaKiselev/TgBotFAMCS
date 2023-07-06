@@ -1,9 +1,9 @@
 import random
 from aiogram import Bot, Dispatcher, executor, types
 import FamcsBotMarkups as mk
-import token
+import config
 
-TOKEN = token.TOKEN
+TOKEN = config.TOKEN
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
