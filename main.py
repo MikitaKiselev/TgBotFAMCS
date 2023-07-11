@@ -2,6 +2,7 @@ import random
 from aiogram import Bot, Dispatcher, executor, types
 import FamcsBotMarkups as mk
 import config
+import time
 
 TOKEN = config.TOKEN
 
@@ -12,6 +13,7 @@ dp = Dispatcher(bot)
 # Стартовая менюшка
 @dp.message_handler(commands=['start'])
 async def command_start(message: types.Message):
+    user_id = message.from_user.id
     await bot.send_message(message.from_user.id, 'Привет, {0.first_name}'.format(message.from_user), reply_markup=mk.startMenu)
 
 
@@ -53,6 +55,11 @@ async def timetable4_call(callback: types.CallbackQuery):
     await callback.message.answer('хер\n*Расписание 4*')
     await callback.answer()
 
+
+async def message_sender(user_id):
+    while True:
+        await bot.send_message(user_id, 'pussy')
+        time.sleep(10)
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
