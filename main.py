@@ -1,8 +1,7 @@
-import random
 from aiogram import Bot, Dispatcher, executor, types
 import FamcsBotMarkups as mk
 import config
-import time
+import asyncio
 from parsing import all_posts
 from parsing import new_post
 
@@ -11,30 +10,28 @@ TOKEN = config.TOKEN
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
+
 # Стартовая менюшка
 @dp.message_handler(commands=['start'])
 async def command_start(message: types.Message):
-    await bot.send_message(message.from_user.id, 'Привет, {0.first_name}'.format(message.from_user), reply_markup=mk.startMenu)
+    await message.answer("Привет, друг\U0001FAE6\nЯ бот, который облегчит тебе жизнь!\n\n\
+Я ищу новые вакансии на <b>LinkedIn</b>, связанные с IT и сразу же присылаю тебе уведомление.\n\n\
+Для запуска поиска отправь команду \n/start_searching_for_new_job\n\
+Для прекращения поиска отправь команду \n/stop_searching_for_new_job\n\n\
+Также у меня есть функция, позволяющая в любую минуту глянуть <b>свое расписание</b> 👀\n\n\
+По всем вопросам и предложениям обращайтесь к @payalnik144 @starostarka", parse_mode="html", reply_markup=mk.startMenu)
 
 
-@dp.message_handler(text='pussy')
-async def get_list(message: types.Message):
+@dp.message_handler(text='Вакансии за сегодня')
+async def points_call(message: types.Message):
     total_list = all_posts()
-    await bot.send_message(message.from_user.id, total_list, parse_mode=types.ParseMode.HTML)
-
-
-# Ответ на запрос про баллы (пока сделал так, потом будем менять)
-@dp.callback_query_handler(text='Узнать баллы')
-async def points_call(callback: types.CallbackQuery):
-    await callback.message.answer('Ульяна гей')
-    await callback.answer()
+    await message.answer(total_list, parse_mode=types.ParseMode.HTML)
 
 
 # Всплывающая менюшка выбора курса обучения (надо добавить ещё выбор спецухи, но эт позже)
-@dp.callback_query_handler(text='Расписание')
-async def timetable_call(callback: types.CallbackQuery):
-    await callback.message.answer('Выбери свой курс', reply_markup=mk.courseMenu)
-    await callback.answer()
+@dp.message_handler(text='Расписание')
+async def timetable_call(message: types.Message):
+    await message.answer('Выбери свой курс', reply_markup=mk.courseMenu)
 
 
 # Ответ на выбранный курс
@@ -61,16 +58,34 @@ async def timetable4_call(callback: types.CallbackQuery):
     await callback.message.answer('хер\n*Расписание 4*')
     await callback.answer()
 
+chat_states = {}
 
-@dp.message_handler(commands=['pizda'])
-async def send_message(message: types.Message):
-    back_list = []
-    while True:
-        post = new_post(back_list)[0]
-        back_list = new_post(back_list)[1]
-        if post is not None:
-            await bot.send_message(message.from_user.id, post, parse_mode=types.ParseMode.HTML)
-        time.sleep(1800)
+
+@dp.message_handler(commands=['start_searching_for_new_job'])
+async def start_searching_for_new_job(message: types.Message):
+    global chat_states
+
+    chat_id = message.chat.id
+    if chat_id not in chat_states or not chat_states[chat_id]:
+        chat_states[chat_id] = True
+        back_list = []
+        await message.answer("Поиск запущен")
+        while chat_states[chat_id]:
+            post, back_list = new_post(back_list)
+            if post is not None:
+                await message.answer(post, parse_mode=types.ParseMode.HTML)
+            await asyncio.sleep(1800)
+
+
+@dp.message_handler(commands=['stop_searching_for_new_job'])
+async def stop_searching_for_new_job(message: types.Message):
+    global chat_states
+
+    chat_id = message.chat.id
+    if chat_id in chat_states and chat_states[chat_id]:
+        chat_states[chat_id] = False
+        await message.answer("Поиск прекращён")
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
