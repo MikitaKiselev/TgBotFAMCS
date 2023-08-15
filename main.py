@@ -74,7 +74,11 @@ async def start_test(message: types.Message):
 
 @dp.message_handler(commands='end_test')
 async def end_test(message: types.Message):
-    await message.answer('Жаль, что ты так и не узна свою ориентацию... Но ты всегда можешь вернуться и пройти тест снова!', reply_markup=mk.startMenu)
+    chat_id = message.chat.id
+    if user_data[chat_id]['test_status']:
+        await message.answer('Жаль, что ты так и не узна свою ориентацию... Но ты всегда можешь вернуться и пройти тест снова!', reply_markup=mk.startMenu)
+    else:
+        await message.answer('Ты еще даже не начал тест, чтоб его заканчивать...', reply_markup=mk.startMenu)
 
 
 async def send_question(chat_id):
