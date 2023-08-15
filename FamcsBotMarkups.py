@@ -13,3 +13,7 @@ inlBtnThirdCourse = InlineKeyboardButton(text='3', callback_data='3')
 inlBtnFourthCourse = InlineKeyboardButton(text='4', callback_data='4')
 courseMenu = InlineKeyboardMarkup(resize_keyboard=True).add(inlBtnFrstCourse, inlBtnScnCourse, inlBtnThirdCourse,\
                                                             inlBtnFourthCourse)
+
+rusLanguage = KeyboardButton(text='Русский', callback_data='Русский')
+chinLanguage = KeyboardButton(text='中国人', callback_data='中国人')
+languageKeyboard = ReplyKeyboardMarkup(resize_keyboard=True).add(rusLanguage, chinLanguage)

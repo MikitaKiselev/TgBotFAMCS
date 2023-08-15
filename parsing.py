@@ -15,7 +15,8 @@ def new_post():
 
     for i in new_list:
         date = i.find(class_='job-search-card__listdate--new').text.strip()
-        if "minutes" in date:
+        pos = date.find('minutes')
+        if pos != -1 or date == 'Just now':
             minutes = 0
             minutes += int(date[0])
             if date[1] != " ":
@@ -54,5 +55,6 @@ def all_posts():
                 item += 'Ссылка пока недоступна(' + "\n"
             item += '\n'
     return item
+
 
 print(new_post())

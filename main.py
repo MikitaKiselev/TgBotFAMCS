@@ -3,6 +3,7 @@ from aiogram.types import ReplyKeyboardMarkup
 import FamcsBotMarkups as mk
 import config
 import asyncio
+import json
 from parsing import all_posts
 from parsing import new_post
 
@@ -11,16 +12,15 @@ TOKEN = config.TOKEN
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
+selected_language = 'ru'
+
+with open('package.json', 'r', encoding='utf-8') as file:
+    translations = json.load(file)
 
 # Стартовая менюшка
 @dp.message_handler(commands=['start'])
 async def command_start(message: types.Message):
-    await message.answer("Привет, друг\U0001FAE6\nЯ бот, который облегчит тебе жизнь!\n\n\
-Я ищу новые вакансии на <b>LinkedIn</b>, связанные с IT и сразу же присылаю тебе уведомление.\n\n\
-Для запуска поиска отправь команду \n/start_searching_for_new_job\n\
-Для прекращения поиска отправь команду \n/stop_searching_for_new_job\n\n\
-Также у меня есть функция, позволяющая в любую минуту глянуть <b>свое расписание</b> 👀\n\n\
-По всем вопросам и предложениям обращайтесь к @payalnik144 @starostarka", parse_mode="html", reply_markup=mk.startMenu)
+    await message.answer("Привет, друг\U0001FAE6\nЯ бот, который облегчит тебе жизнь!\n\n Я ищу новые вакансии на <b>LinkedIn</b>, связанные с IT и сразу же присылаю тебе уведомление.\n\nДля запуска поиска отправь команду \n/start_searching_for_new_job\nДля прекращения поиска отправь команду \n/stop_searching_for_new_job\n\nТакже у меня есть функция, позволяющая в любую минуту глянуть <b>свое расписание</b> 👀\n\nПо всем вопросам и предложениям обращайтесь к @payalnik144 @starostarka", parse_mode="html", reply_markup=mk.startMenu)
 
 
 @dp.message_handler(text='Вакансии за сегодня')
