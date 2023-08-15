@@ -3,7 +3,6 @@ from aiogram.types import ReplyKeyboardMarkup
 import FamcsBotMarkups as mk
 import config
 import asyncio
-import json
 from parsing import all_posts
 from parsing import new_post
 
@@ -12,10 +11,17 @@ TOKEN = config.TOKEN
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
+
 # Стартовая менюшка
 @dp.message_handler(commands=['start'])
 async def command_start(message: types.Message):
-    await message.answer("Привет, друг\U0001FAE6\nЯ бот, который облегчит тебе жизнь!\n\n Я ищу новые вакансии на <b>LinkedIn</b>, связанные с IT и сразу же присылаю тебе уведомление.\n\nДля запуска поиска отправь команду \n/start_searching_for_new_job\nДля прекращения поиска отправь команду \n/stop_searching_for_new_job\n\nТакже у меня есть функция, позволяющая в любую минуту глянуть <b>свое расписание</b> 👀\n\nПо всем вопросам и предложениям обращайтесь к @payalnik144 @starostarka", parse_mode="html", reply_markup=mk.startMenu)
+    await message.answer("Привет, друг\U0001FAE6\nЯ бот, который облегчит тебе жизнь!\n\n\
+Я ищу новые вакансии на <b>LinkedIn</b>, связанные с IT и сразу же присылаю тебе уведомление.\n\n\
+Для запуска поиска отправь команду \n/start_searching_for_new_job\nДля прекращения поиска отправь команду\
+\n/stop_searching_for_new_job\n\nТакже у меня есть функция, позволяющая в любую минуту глянуть <b>свое расписание</b> 👀\
+\n\nЕсли считаешь себя истиным ФПМовцом, то просто обязан пройти тест на принадлежность к студенческой организации😉\n\
+Запуск теста \n/start_test\nДосрочное завершение\n/stop_test\n\n\
+По всем вопросам и предложениям обращайтесь к @payalnik144 @starostarka", parse_mode="html", reply_markup=mk.startMenu)
 
 
 @dp.message_handler(text='Вакансии за сегодня')
@@ -72,13 +78,14 @@ async def start_test(message: types.Message):
         await send_question(chat_id)
 
 
-@dp.message_handler(commands='end_test')
-async def end_test(message: types.Message):
-    chat_id = message.chat.id
-    if user_data[chat_id]['test_status']:
-        await message.answer('Жаль, что ты так и не узна свою ориентацию... Но ты всегда можешь вернуться и пройти тест снова!', reply_markup=mk.startMenu)
-    else:
-        await message.answer('Ты еще даже не начал тест, чтоб его заканчивать...', reply_markup=mk.startMenu)
+# @dp.message_handler(commands='end_test')
+# async def end_test(message: types.Message):
+#     chat_id = message.chat.id
+#     if user_data[chat_id]['test_status']:
+#         await message.answer('Жаль, что ты так и не узна свою ориентацию... Но ты всегда можешь вернуться\
+# и пройти тест снова!', reply_markup=mk.startMenu)
+#     else:
+#         await message.answer('Ты еще даже не начал тест, чтоб его заканчивать...', reply_markup=mk.startMenu)
 
 
 async def send_question(chat_id):
@@ -89,8 +96,13 @@ async def send_question(chat_id):
     answer_options = test_data.get(questions[user['number']])
 
     for idx, button in enumerate(answer_options):
-        # Добавляем все кнопки, кроме последней, когда user['number'] равен 2 или 9
-        if not (user['number'] == 2 or user['number'] == 9) or idx < len(answer_options) - 1:
+        if user['number'] == 2:
+            if idx < len(answer_options) - 2:
+                testButtons.add(button[:len(button) - 1])
+        elif user['number'] == 9:
+            if idx < len(answer_options) - 1:
+                testButtons.add(button[:len(button) - 1])
+        else:
             testButtons.add(button[:len(button) - 1])
 
     await bot.send_message(chat_id, questions[user['number']], reply_markup=testButtons)
@@ -109,6 +121,20 @@ async def test_result(chat_id):
     else:
         await bot.send_message(chat_id, 'Что ж... Ты определенно настоящий ФПМовец и обязан пополнить ряды Студенческого союза ФПМИ!', reply_markup=mk.startMenu)
     print(user['score'])
+
+
+@dp.message_handler(commands=['stop_test'])
+async def stop_test(message: types.Message):
+    chat_id = message.chat.id
+    if chat_id in user_data and user_data[chat_id]['test_status']:
+        # Остановка теста и сброс данных пользователя
+        user_data[chat_id]['test_status'] = False
+        user_data[chat_id]['number'] = 0
+        user_data[chat_id]['score'] = 0
+        await message.answer("Жаль, что ты так и не узнал свою ориентацию...\n\
+Но ты всегда можешь вернуться и пройти тест снова!", reply_markup=mk.startMenu)
+    else:
+        await message.answer("Ты еще даже не начал тест, чтоб его заканчивать...\nТыкай сюда /start_test, чтобы начать")
 
 
 # Всплывающая менюшка выбора курса обучения (надо добавить ещё выбор спецухи, но эт позже)
@@ -157,7 +183,6 @@ async def start_searching_for_new_job(message: types.Message):
     chat_id = message.chat.id
     if chat_id not in chat_states or not chat_states[chat_id]:
         chat_states[chat_id] = True
-        back_list = []
         await message.answer("Поиск запущен")
         while chat_states[chat_id]:
             post = new_post()
@@ -166,7 +191,6 @@ async def start_searching_for_new_job(message: types.Message):
             await asyncio.sleep(1200)
     else:
         await message.answer("Поиск идёт")
-
 
 
 @dp.message_handler(commands=['stop_searching_for_new_job'])
@@ -214,7 +238,8 @@ async def check_answer(message: types.Message):
                 await send_question(chat_id)
     else:
         # Если нет активного теста, можно обработать другие сценарии здесь
-        await bot.send_message(chat_id, 'Для начала теста напишите "Пройти тест"')
+        await bot.send_message(chat_id, 'Братишка, я хз чего ты от меня хочешь, ознакомься с доступными командами,\
+а потом уже пукай сообщение')
 
 
 if __name__ == '__main__':
