@@ -4,8 +4,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemo
 inlBtnVacancies = KeyboardButton(text='Вакансии за сегодня', callback_data='Вакансии за сегодня')
 inlBtnTimetable = KeyboardButton(text='Расписание', callback_data='Расписание')
 inlSupport = KeyboardButton(text='Поддержка', callback_data='Поддержка')
-inlTest = KeyboardButton(text='Пройти тест', callback_data='Пройти тест')
-startMenu = ReplyKeyboardMarkup(resize_keyboard=True).add(inlTest, inlBtnTimetable, inlSupport, inlBtnVacancies)
+startMenu = ReplyKeyboardMarkup(resize_keyboard=True).add(inlBtnTimetable, inlSupport, inlBtnVacancies)
 
 inlBtnFrstCourse = InlineKeyboardButton(text='1', callback_data='1')
 inlBtnScnCourse = InlineKeyboardButton(text='2', callback_data='2')
