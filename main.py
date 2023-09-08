@@ -1,5 +1,5 @@
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import ReplyKeyboardMarkup
+from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import FamcsBotMarkups as mk
 import config
 import asyncio
@@ -68,24 +68,17 @@ async def start_test(message: types.Message):
     # Проверяем, нет ли уже активного теста для данного пользователя
     if chat_id not in user_data or not user_data[chat_id]['test_status']:
         # Создаем новую структуру данных для текущего пользователя
-        user_data[chat_id] = {
+        '''user_data[chat_id] = {
             'test_status': True,
             'score': 0,
             'number': 0
-        }
+        }'''
+        user_data[chat_id]['test_status'] = True
+        user_data[chat_id]['score'] = 0
+        user_data[chat_id]['number'] = 0
         await message.answer("На ФПМИ есть большое количество организаций и активностей, где ты сможешь \
 реализовать себя, ведь ФПМИ это не только об учебе! \nПройди тест и узнай, что тебе подходит больше всего.")
         await send_question(chat_id)
-
-
-# @dp.message_handler(commands='end_test')
-# async def end_test(message: types.Message):
-#     chat_id = message.chat.id
-#     if user_data[chat_id]['test_status']:
-#         await message.answer('Жаль, что ты так и не узна свою ориентацию... Но ты всегда можешь вернуться\
-# и пройти тест снова!', reply_markup=mk.startMenu)
-#     else:
-#         await message.answer('Ты еще даже не начал тест, чтоб его заканчивать...', reply_markup=mk.startMenu)
 
 
 async def send_question(chat_id):
@@ -140,8 +133,19 @@ async def stop_test(message: types.Message):
 # Всплывающая менюшка выбора курса обучения (надо добавить ещё выбор спецухи, но эт позже)
 @dp.message_handler(text='Расписание')
 async def timetable_call(message: types.Message):
-    await message.answer('Выбери свой курс', reply_markup=mk.courseMenu)
+    chat_id = message.chat.id
+    if chat_id in user_data and 'course' in user_data[chat_id]:
+        await message.answer('Что будем смотреть?', reply_markup=mk.mainCoourseMenu)
+    else:
+        await message.answer('Выбери свой курс', reply_markup=mk.courseMenu)
+        user_data[chat_id] = {}
+        user_data[chat_id]['test_status'] = False
 
+    #await message.answer('Какая у тебя группа?')
+
+
+async def get_group(chat_id):
+    await bot.send_message(chat_id, 'Напиши свою группу', reply_markup=ReplyKeyboardRemove())
 
 @dp.message_handler(text='Поддержка')
 async def timetable_call(message: types.Message):
@@ -150,6 +154,7 @@ async def timetable_call(message: types.Message):
 
 
 # Ответ на выбранный курс
+'''
 @dp.callback_query_handler(text='1')
 async def timetable1_call(callback: types.CallbackQuery):
     await callback.message.answer('гавно\n*Расписание 1*')
@@ -172,6 +177,7 @@ async def timetable3_call(callback: types.CallbackQuery):
 async def timetable4_call(callback: types.CallbackQuery):
     await callback.message.answer('хер\n*Расписание 4*')
     await callback.answer()
+'''
 
 chat_states = {}
 
@@ -238,7 +244,15 @@ async def check_answer(message: types.Message):
                 await send_question(chat_id)
     else:
         # Если нет активного теста, можно обработать другие сценарии здесь
-        await bot.send_message(chat_id, 'Братишка, я хз чего ты от меня хочешь, ознакомься с доступными командами,\
+        if message.text.isdigit():
+            if 'course' not in user_data[chat_id]:
+                user_data[message.chat.id]['course'] = message.text
+                await get_group(message.chat.id)
+            else:
+                user_data[message.chat.id]['group'] = message.text
+                await message.answer('Что будем смотреть?', reply_markup=mk.mainCoourseMenu)
+        else:
+            await bot.send_message(chat_id, 'Братишка, я хз чего ты от меня хочешь, ознакомься с доступными командами,\
 а потом уже пукай сообщение')
 
 

@@ -39,7 +39,6 @@ def new_post():
     new_list = parsing()
 
     for i in new_list:
-        # date = i.find(class_='job-search-card__listdate--new').text.strip()
         date = answer_maker(i)[1]
         pos = date.find('minutes')
         if pos != -1 or date == 'Just now':
@@ -63,5 +62,5 @@ def all_posts():
             item += '\n'
     return item
 
-
-print(all_posts())
+#print(all_posts())
+#print(new_post())
