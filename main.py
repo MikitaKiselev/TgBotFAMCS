@@ -12,11 +12,11 @@ TOKEN = config.TOKEN
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
-file_path_1 = "shedule1.txt"
+file_path_1 = "schedule1.txt"
 with open(file_path_1, 'r', encoding='utf-8') as file:
     schedule_1_course = file.read()
 
-file_path_2 = "shedule2.txt"
+file_path_2 = "schedule2.txt"
 with open(file_path_2, 'r', encoding='utf-8') as file:
     schedule_2_course = file.read()
 
@@ -172,7 +172,7 @@ def get_weekday(request="today"):
     return days[index]
 
 
-async def get_schedule_part(course, group):
+async def get_week_schedule(course, group):
     if course == "1":
         schedule_course = schedule_1_course
         group_range = range(1, 12)
@@ -184,11 +184,8 @@ async def get_schedule_part(course, group):
 
     for i in group_range:
         if group == str(i):
-            group_str = "{} группа".format(i)
             schedule_part = schedule_course[
-                            schedule_course.find(group_str) - 6:schedule_course.find("{} группа".format(i + 1)) - 9]
-            schedule_part = schedule_part[
-                            schedule_part.find(get_weekday()):schedule_part.find(get_weekday(request="tomorrow"))]
+                 schedule_course.find("{} группа".format(i)) - 6:schedule_course.find("{} группа".format(i + 1)) - 9]
             return schedule_part
 
     return None
@@ -205,8 +202,10 @@ async def today_timetable(callback: types.CallbackQuery):
     course = user_data[callback.message.chat.id]['course']
     group = user_data[callback.message.chat.id]['group']
 
-    schedule_part = await get_schedule_part(course, group)
+    schedule_part = await get_week_schedule(course, group)
     if schedule_part is not None:
+        schedule_part = schedule_part[schedule_part.find(get_weekday()):schedule_part.find(
+            get_weekday(request="tomorrow"))]
         await send_schedule_for_day(schedule_part, callback, group)
     else:
         await callback.message.answer("Сорри, расписание не найдено.")
@@ -225,7 +224,7 @@ async def tomorrow_timetable(callback: types.CallbackQuery):
     course = user_data[callback.message.chat.id]['course']
     group = user_data[callback.message.chat.id]['group']
 
-    schedule_part = await get_schedule_part(course, group)
+    schedule_part = await get_week_schedule(course, group)
     if schedule_part is not None:
         schedule_part = schedule_part[schedule_part.find(get_weekday(request="tomorrow")):schedule_part.find(
             get_weekday(request="after_tomorrow"))]
@@ -234,27 +233,6 @@ async def tomorrow_timetable(callback: types.CallbackQuery):
         await callback.message.answer("Сорри, расписание не найдено.")
 
     await callback.answer()
-
-
-async def get_week_schedule(course, group):
-    if course == "1":
-        schedule_course = schedule_1_course
-        group_range = range(1, 12)
-    elif course == "2":
-        schedule_course = schedule_2_course
-        group_range = range(1, 14)
-    else:
-        return None
-
-    for i in group_range:
-        if group == str(i):
-            group_str = "{} группа".format(i)
-            start_index = schedule_course.find(group_str) - 7
-            end_index = schedule_course.find("{} группа".format(i + 1)) - 9
-            schedule_part = schedule_course[start_index:end_index]
-            return schedule_part
-
-    return None
 
 
 @dp.callback_query_handler(text='Расписание на неделю')
