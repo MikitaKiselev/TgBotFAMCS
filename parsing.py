@@ -48,7 +48,7 @@ def new_post():
             if date[1] != " ":
                 minutes *= 10
                 minutes += int(date[1])
-            if minutes <= 30:
+            if minutes <= 20:
                 return answer_maker(i)[0]
     return None
 

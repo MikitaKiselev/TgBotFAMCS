@@ -1,6 +1,7 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ReplyKeyboardMarkup
 import datetime
+import pytz
 import FamcsBotMarkups as mk
 import config
 import asyncio
@@ -159,16 +160,20 @@ async def timetable_call(message: types.Message):
         user_data[chat_id]['test_status'] = False
         user_data[chat_id]['schedule_course_status'] = True
         user_data[chat_id]['schedule_group_status'] = True
+        user_data[message.chat.id]['group'] = "-1"
 
 
 def get_weekday(request="today"):
+    tz = pytz.timezone('Europe/Moscow')  # Устанавливаем нужную временную зону
+    now = datetime.datetime.now(tz=tz)
+
     days = ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье']
     if request == "tomorrow":
-        index = (datetime.datetime.today().weekday() + 1) % 7
+        index = (now.weekday() + 1) % 7
     elif request == "after_tomorrow":
-        index = (datetime.datetime.today().weekday() + 2) % 7
+        index = (now.weekday() + 2) % 7
     else:
-        index = datetime.datetime.today().weekday()
+        index = now.weekday()
     return days[index]
 
 
@@ -185,7 +190,7 @@ async def get_week_schedule(course, group):
     for i in group_range:
         if group == str(i):
             schedule_part = schedule_course[
-                 schedule_course.find("{} группа".format(i)) - 6:schedule_course.find("{} группа".format(i + 1)) - 9]
+                 schedule_course.find("{} группа".format(i)) - 7:schedule_course.find("{} группа".format(i + 1)) - 9]
             return schedule_part
 
     return None
@@ -268,7 +273,7 @@ async def get_group(chat_id):
     elif user_data[chat_id]['course'] == "2":
         await bot.send_message(chat_id, 'Выбери свою группу', reply_markup=mk.second_course_menu)
     else:
-        await bot.send_message(chat_id, 'Напиши свою группу', reply_markup=mk.startMenu)
+        await bot.send_message(chat_id, 'Напиши номер своей группу', reply_markup=mk.startMenu)
 
 
 @dp.message_handler(text='Поддержка')
@@ -404,10 +409,7 @@ async def check_answer(message: types.Message):
                             await message.answer('Наслаждайся 😎😉', reply_markup=mk.startMenu)
                         else:
                             await message.answer("Нет такой группы, друг, но не переживай, у тебя ещё есть попытки:)")
-                    elif user_data[message.chat.id]["course"] == "3":
-                        await message.answer("Сорри,расписание на 3 и 4 курс не сделали((( Бюджет кончился",
-                                             reply_markup=mk.startMenu)
-                    elif user_data[message.chat.id]["course"] == "4":
+                    elif user_data[message.chat.id]["course"] == "3" or user_data[message.chat.id]["course"] == "4":
                         await message.answer("Сорри,расписание на 3 и 4 курс не сделали((( Бюджет кончился",
                                              reply_markup=mk.startMenu)
                 else:
