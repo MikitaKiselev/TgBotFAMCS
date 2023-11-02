@@ -1,4 +1,6 @@
 # Телеграм-бот для поиска вакансий и управления расписанием [RU]
+#
+## Описание проекта
 Этот телеграм-бот представляет собой удобный инструмент для поиска вакансий на LinkedIn, получения расписания для студентов ФПМИ и прохождения теста для определения наиболее подходящей студенческой организации. Бот также предоставляет опцию поддержки проекта.
 
 ## Поиск вакансий
@@ -28,7 +30,9 @@
 #
 #
 
-## Telegram Bot for Job Search and Schedule Management [ENG]
+# Telegram Bot for Job Search and Schedule Management [ENG]
+#
+## Project description
 This Telegram bot is a multifunctional tool designed for students and job seekers in the field of information technology. The bot provides access to real-time job search on LinkedIn, schedule management for students of the Faculty of Applied Mathematics and Computer Science (FAMCS), and even helps users determine which student organization might be the best fit for them.
 
 ## Job Search
